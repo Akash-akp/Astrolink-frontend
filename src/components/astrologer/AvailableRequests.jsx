@@ -1,12 +1,44 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar, Users, MessageCircle, X } from 'lucide-react';
+import { Calendar, Users } from 'lucide-react';
 import proxyService from '../../utils/proxyService';
-
+import { toast } from 'react-toast';
 
 const AvailableRequests = () => {
-  const [mockRequests,setMockRequests] = useState([]);
-  const handleViewChat = (id) => {
-    console.log(`View chat for request ID: ${id}`);
+  const [requests, setRequests] = useState([]);
+
+  const acceptRequest = async(id) => {
+    try{
+
+      console.log(`Bearer ${JSON.parse(localStorage.getItem('currentUser')).token}`);
+      
+
+      const response = await proxyService.post(`/request/${id}/accept/${JSON.parse(localStorage.getItem('currentUser')).user.id}`,{},{
+        headers: {
+          Authorization: `Bearer ${JSON.parse(localStorage.getItem('currentUser')).token}`,
+        },
+      })
+      if(response.status === 200){
+        toast.success('Request accepted successfully!', { position: 'top' });
+        console.log(response.data);
+      }else{
+        toast.error('Something went wrong!', { position: 'top' });
+      }
+
+
+    }catch(error){
+      if(error.response && error.response.status === 401){
+        toast.error('Unauthorized!', { position: 'top' });
+      }else if(error.response && error.response.status === 400){
+        toast.error('You have already accepted this request!', { position: 'top' });
+      }else if(error.response && error.response.status === 404){
+        toast.error('Request not found!', { position: 'top' });
+      }else if(error.response && error.response.status === 500){
+        toast.error('Internal server error!', { position: 'top' });
+      }else{
+        toast.error('Something went wrong!', { position: 'top' });
+      }
+      console.error('Error accepting request:', error);
+    }
   };
 
   const handleCloseRequest = (id) => {
@@ -14,14 +46,31 @@ const AvailableRequests = () => {
   };
 
   useEffect(() => {
-    const response = await proxyService.get('/request/')
-  },[mockRequests]);
+    const fetchRequests = async () => {
+      try {
+        const token = JSON.parse(localStorage.getItem('currentUser')).token;
+        const response = await proxyService.get('/request/available', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: {
+            astrologerId: JSON.parse(localStorage.getItem('currentUser')).user.id,  
+          }
+        });
+        setRequests(response.data);
+      } catch (error) {
+        console.error('Error fetching requests:', error);
+      }
+    };
+
+    fetchRequests();
+  }, []); // Empty dependency array to run only once on mount
 
   return (
     <div className="space-y-8">
       {/* Active Requests Section */}
       <div>
-        {mockRequests.length === 0 ? (
+        {requests.length === 0 ? (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 text-center">
             <p className="text-gray-600 dark:text-gray-400">
               You don't have any active consultation requests.
@@ -29,7 +78,7 @@ const AvailableRequests = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            {mockRequests.map((request) => (
+            {requests.map((request) => (
               <div
                 key={request.id}
                 className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg"
@@ -77,7 +126,7 @@ const AvailableRequests = () => {
 
                 <div className="px-5 py-3 bg-purple-50 dark:bg-purple-900/20 border-t border-purple-100 dark:border-purple-800/30">
                   <button
-                    onClick={() => handleViewChat(request.id)}
+                    onClick={() => acceptRequest(request.id)}
                     className="w-full py-2 text-center text-sm font-medium text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 transition-colors"
                   >
                     Accept Request

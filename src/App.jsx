@@ -22,20 +22,23 @@ const ProtectedRoute = ({ children, allowedRole }) => {
     const { currentUser, isClient, isAstrologer } = useAuth();
 
     // Check if the user is logged in
-    if (!currentUser || !currentUser.user) {
+    if (!currentUser) {
+      console.log("User not logged in or user object is missing.");
         return <Navigate to="/login" replace />;
     }
 
     // Check if the user's role matches the allowed role
     if (allowedRole === 'client' && !isClient()) {
+        console.log("User is not a client.");
         return <Navigate to="/astrologer/dashboard" replace />;
     }
     if (allowedRole === 'astrologer' && !isAstrologer()) {
+        console.log("User is not an astrologer.");
         return <Navigate to="/client/dashboard" replace />;
     }
     if (allowedRole === 'both' && !isClient() && !isAstrologer()) {
-        return <Navigate to="/" replace />
-        
+        console.log("User is neither a client nor an astrologer.");
+        return <Navigate to="/" replace />  
     }
 
     // If all checks pass, render the children
@@ -119,6 +122,14 @@ const AppContent = () => {
 
         {/* Chat route (protected for logged-in users only) */}
         <Route path="/chat" element={
+            <ProtectedRoute allowedRole={"both"}>
+                <ChatLayout />
+            </ProtectedRoute>
+        } />
+
+
+        {/* Chat route (protected for logged-in users only) */}
+        <Route path="/chat/:consultationId" element={
             <ProtectedRoute allowedRole={"both"}>
                 <ChatLayout />
             </ProtectedRoute>

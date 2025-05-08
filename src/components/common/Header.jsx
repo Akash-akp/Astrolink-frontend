@@ -85,7 +85,7 @@ const Header = ({ toggleTheme, isDarkMode }) => {
 
           <div className="flex items-center space-x-4">
 
-            {currentUser && !location.pathname.startsWith('/chat') && (
+            {currentUser  && (
               <button
                 onClick={logout}
                 className="flex items-center text-sm hover:text-purple-200 transition-colors"

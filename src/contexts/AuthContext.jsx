@@ -4,6 +4,7 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true); // Add loading state
 
   // Restore user from localStorage on app initialization
   useEffect(() => {
@@ -11,6 +12,7 @@ export const AuthProvider = ({ children }) => {
     if (storedUser) {
       setCurrentUser(JSON.parse(storedUser));
     }
+    setLoading(false); // Set loading to false after restoring user
   }, []);
 
   const login = (user) => {
@@ -26,6 +28,11 @@ export const AuthProvider = ({ children }) => {
   const isClient = () => currentUser?.role === 'client';
   const isAstrologer = () => currentUser?.role === 'astrologer';
 
+  if (loading) {
+    // Optionally, render a loading state while restoring user
+    return <div>Loading...</div>;
+  }
+
   return (
     <AuthContext.Provider value={{ currentUser, login, logout, isClient, isAstrologer }}>
       {children}
@@ -33,4 +40,11 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+// Custom hook to use the AuthContext
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};

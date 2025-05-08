@@ -51,7 +51,7 @@ const RequestForm = ({ onRequestCreated }) => {
       setBirthTime('');
       setBirthPlace('');
       setShowBirthDetails(false);
-      window.location.reload();
+      // window.location.reload();
     }
   };
 

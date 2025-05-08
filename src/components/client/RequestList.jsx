@@ -4,9 +4,7 @@ import { Calendar, Users, X, MessageCircle } from 'lucide-react';
 import LoadingSpinner from '../common/LoadingSpinner';
 import proxyService from '../../utils/proxyService';
 
-const RequestList = () => {
-  const [activeRequests, setActiveRequests] = useState([]); // Initialize with an empty array
-  const [isLoading, setIsLoading] = useState(false); // Simulate loading state
+const RequestList = ({activeRequests,setActiveRequests,isLoading,setIsLoading}) => {
   const navigate = useNavigate();
 
   const handleViewChat = (requestId) => {

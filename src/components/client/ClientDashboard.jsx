@@ -1,10 +1,20 @@
-import React from 'react';
-import { Star, Users, Shield } from 'lucide-react';
+import React, { useState } from 'react';
+import { Star, Users, Shield, CloudCog } from 'lucide-react';
 import RequestForm from './RequestForm';
 import RequestList from './RequestList';
 import RequestHistory from './RequestHistory';
 
 const ClientDashboard = () => {
+  const [activeRequests, setActiveRequests] = useState([]); // Initialize with an empty array
+  const [isLoading, setIsLoading] = useState(false);
+
+  const countChats = () => {
+    const chatCount = activeRequests.reduce((count, request) => {
+      return count+request.acceptingAstrologersCount;
+    }, 0);
+    return chatCount;
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6 text-gray-800 dark:text-white">Client Dashboard</h1>
@@ -14,14 +24,14 @@ const ClientDashboard = () => {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-purple-100 text-sm mb-1">Active Requests</p>
-              <h3 className="text-3xl font-bold">3/3</h3>
+              <h3 className="text-3xl font-bold">{isLoading ? "Loading..." : activeRequests.length}</h3>
             </div>
             <div className="p-3 bg-white/10 rounded-full">
               <Users className="w-6 h-6" />
             </div>
           </div>
           <p className="mt-4 text-sm text-purple-100">
-            You can have up to 3 active consultation requests.
+            Your path to solutions begins with a consultation
           </p>
         </div>
         
@@ -29,7 +39,7 @@ const ClientDashboard = () => {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-blue-100 text-sm mb-1">Total Active Chats</p>
-              <h3 className="text-3xl font-bold">5</h3>
+              <h3 className="text-3xl font-bold">{isLoading ? "Loading..." : countChats()}</h3>
             </div>
             <div className="p-3 bg-white/10 rounded-full">
               <Shield className="w-6 h-6" />
@@ -82,7 +92,7 @@ const ClientDashboard = () => {
           <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">
             Your Active Requests
           </h2>
-          <RequestList />
+          <RequestList activeRequests={activeRequests} setActiveRequests={setActiveRequests} isLoading={isLoading} setIsLoading={setIsLoading} />
           <h2 className="text-2xl font-semibold my-4 text-gray-800 dark:text-white">
             Your Requests History
           </h2>
