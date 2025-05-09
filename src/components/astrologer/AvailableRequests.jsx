@@ -49,12 +49,9 @@ const AvailableRequests = () => {
     const fetchRequests = async () => {
       try {
         const token = JSON.parse(localStorage.getItem('currentUser')).token;
-        const response = await proxyService.get('/request/available', {
+        const response = await proxyService.get(`/request/available?astrologerId=${JSON.parse(localStorage.getItem('currentUser')).user.id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
-          },
-          params: {
-            astrologerId: JSON.parse(localStorage.getItem('currentUser')).user.id,  
           }
         });
         setRequests(response.data);

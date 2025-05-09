@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Moon, Sun, LogOut, MessageSquare } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useIsAuthPage } from '../../utils/routeUtils';
+import { FaBell } from "react-icons/fa";
 
 const Header = ({ toggleTheme, isDarkMode }) => {
   const { currentUser, logout, isClient, isAstrologer } = useAuth();
@@ -84,6 +85,12 @@ const Header = ({ toggleTheme, isDarkMode }) => {
           </nav>
 
           <div className="flex items-center space-x-4">
+
+            {currentUser&& currentUser.role === 'client' && (
+              <Link to={'/notification'} className="text-sm hover:text-purple-200 transition-colors">
+                <FaBell />
+              </Link>
+            )}
 
             {currentUser  && (
               <button

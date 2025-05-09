@@ -16,6 +16,7 @@ import { ChatProvider } from './contexts/ChatContext';
 import { PaymentProvider } from './contexts/PaymentContext';
 import { shouldShowFooter } from './utils/routeUtils';
 import { ToastContainer } from 'react-toast';
+import NotificationPage from './pages/NotificationPage';
 
 // Protected route wrapper
 const ProtectedRoute = ({ children, allowedRole }) => {
@@ -124,6 +125,14 @@ const AppContent = () => {
         <Route path="/chat" element={
             <ProtectedRoute allowedRole={"both"}>
                 <ChatLayout />
+            </ProtectedRoute>
+        } />
+
+
+        {/* Chat route (protected for logged-in users only) */}
+        <Route path="/notification" element={
+            <ProtectedRoute allowedRole={"client"}>
+                <NotificationPage />
             </ProtectedRoute>
         } />
 

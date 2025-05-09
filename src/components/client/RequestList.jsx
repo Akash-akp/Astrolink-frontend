@@ -8,7 +8,7 @@ const RequestList = ({activeRequests,setActiveRequests,isLoading,setIsLoading}) 
   const navigate = useNavigate();
 
   const handleViewChat = (requestId) => {
-    navigate(`/client/chat/${requestId}`);
+    navigate(`/chat/${requestId}`);
   };
 
   const handleCloseRequest = async (requestId) => {

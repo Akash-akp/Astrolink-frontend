@@ -6,6 +6,7 @@ import { mockConsultations } from './mockData'; // Mock data for consultations
 import ConsultationFolder from './ConsultationFolder';
 import { FaPaperclip } from 'react-icons/fa6';
 import { FaFileAlt, FaCamera, FaImage } from 'react-icons/fa';
+import proxyService from '../../utils/proxyService';
 
 const ChatLayout = () => {
   const { consultationId, chatId } = useParams(); // Extract consultationId and chatId from URL
@@ -14,8 +15,55 @@ const ChatLayout = () => {
   const [selectedConsultation, setSelectedConsultation] = useState(null); // Selected consultation
   const [paperPin, setPaperPin] = useState(false);
   const [messageInput, setMessageInput] = useState(''); // Added missing state for message input
+  const [mockConsultations, setMockConsultations] = useState([]); // State for mock consultations
 
   useEffect(() => {
+    const fetchConsultations = async () => {
+      const token = JSON.parse(localStorage.getItem('currentUser')).token;
+      const response = await proxyService.get(`/chats/${JSON.parse(localStorage.getItem('currentUser')).user.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const consultations = [];
+      for(let i = 0; i < response.data.length; i++){
+        const consultId = response.data[i].consultationId;
+        const chatId = response.data[i].chatId;
+        const chatName = response.data[i].chatName;
+        let ind = -1;
+        for(let j = 0; j < consultations.length; j++){
+          if(consultations[j].id === consultId){
+            ind = j;
+            break;
+          }
+        }
+        if(ind === -1){
+          const newConsultation = {
+            id: chatId,
+            title: chatName,
+            messages: [],
+          };
+          const newConsultationFolder = {
+            id: consultId,
+            issue: 'issue',
+            chats: [],
+          };
+          newConsultationFolder.chats.push(newConsultation);
+          consultations.push(newConsultationFolder);
+        }else{
+          const newConsultation = {
+            id: chatId,
+            title: chatName,
+            messages: [],
+          };
+          consultations[ind].chats.push(newConsultation);
+        }
+      }
+      console.log(consultations);
+      setMockConsultations(consultations);
+    };
+    fetchConsultations();
+
     // Automatically open the consultation folder and chat if params are provided
     if (consultationId) {
       const consultation = mockConsultations.find((c) => c.id === consultationId);
