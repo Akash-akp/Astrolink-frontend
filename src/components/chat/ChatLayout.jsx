@@ -1,98 +1,93 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom'; // Import useParams for URL parameters
+import React, { useState, useEffect, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { mockConsultations } from './mockData'; // Mock data for consultations
 import ConsultationFolder from './ConsultationFolder';
-import { FaPaperclip } from 'react-icons/fa6';
-import { FaFileAlt, FaCamera, FaImage } from 'react-icons/fa';
 import proxyService from '../../utils/proxyService';
+import LoadingSpinner from '../common/LoadingSpinner';
+import ChatMessages from './ChatMessages';
+import CommonBtn from '../../utils/CommonBtn';
+import FirebaseImageUpload from '../firebase/FirebaseImageUpload';
+
 
 const ChatLayout = () => {
-  const { consultationId, chatId } = useParams(); // Extract consultationId and chatId from URL
+  const { consultationId, chatId } = useParams();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const [selectedChat, setSelectedChat] = useState(null); // Selected chat
-  const [selectedConsultation, setSelectedConsultation] = useState(null); // Selected consultation
-  const [paperPin, setPaperPin] = useState(false);
-  const [messageInput, setMessageInput] = useState(''); // Added missing state for message input
-  const [mockConsultations, setMockConsultations] = useState([]); // State for mock consultations
+  const [selectedChat, setSelectedChat] = useState(null);
+  const [selectedConsultation, setSelectedConsultation] = useState(null);
+  const [mockConsultations, setMockConsultations] = useState([]);
+  const [chatSidebarLoading, setChatSidebarLoading] = useState(true);
+  const [isFileUploadOpen, setFileUploadOpen] = useState(false);
 
   useEffect(() => {
     const fetchConsultations = async () => {
+      setChatSidebarLoading(true);
       const token = JSON.parse(localStorage.getItem('currentUser')).token;
-      const response = await proxyService.get(`/chats/${JSON.parse(localStorage.getItem('currentUser')).user.id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const consultations = [];
-      for(let i = 0; i < response.data.length; i++){
-        const consultId = response.data[i].consultationId;
-        const chatId = response.data[i].chatId;
-        const chatName = response.data[i].chatName;
-        let ind = -1;
-        for(let j = 0; j < consultations.length; j++){
-          if(consultations[j].id === consultId){
-            ind = j;
-            break;
+      const role = JSON.parse(localStorage.getItem('currentUser')).role;
+
+      try {
+        const response = await proxyService.get(
+          role === 'astrologer'
+            ? `/chats/astrologer/${JSON.parse(localStorage.getItem('currentUser')).user.id}`
+            : `/chats/${JSON.parse(localStorage.getItem('currentUser')).user.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
+        );
+
+        const consultations = response.data.reduce((acc, chat) => {
+          const { consultationId, chatId, chatName, issue } = chat;
+          let consultation = acc.find((c) => c.id === consultationId);
+
+          if (!consultation) {
+            consultation = { id: consultationId, issue, chats: [] };
+            acc.push(consultation);
+          }
+
+          consultation.chats.push({ id: chatId, title: chatName, messages: [] });
+          return acc;
+        }, []);
+
+        setMockConsultations(consultations);
+
+        // Automatically open the consultation folder and chat if params are provided
+        if (consultationId) {
+          const consultation = consultations.find((c) => c.id === consultationId);
+          setSelectedConsultation(consultation);
         }
-        if(ind === -1){
-          const newConsultation = {
-            id: chatId,
-            title: chatName,
-            messages: [],
-          };
-          const newConsultationFolder = {
-            id: consultId,
-            issue: 'issue',
-            chats: [],
-          };
-          newConsultationFolder.chats.push(newConsultation);
-          consultations.push(newConsultationFolder);
-        }else{
-          const newConsultation = {
-            id: chatId,
-            title: chatName,
-            messages: [],
-          };
-          consultations[ind].chats.push(newConsultation);
+
+        if (chatId) {
+          consultations.forEach((consultation) => {
+            const chat = consultation.chats.find((c) => c.id === chatId);
+            if (chat) {
+              setSelectedConsultation(consultation);
+              setSelectedChat(chat);
+            }
+          });
         }
+        console.log('Consultations:', consultations);
+      } catch (error) {
+        console.error('Error fetching consultations:', error);
+      } finally {
+        setChatSidebarLoading(false);
       }
-      console.log(consultations);
-      setMockConsultations(consultations);
     };
+
     fetchConsultations();
 
-    // Automatically open the consultation folder and chat if params are provided
-    if (consultationId) {
-      const consultation = mockConsultations.find((c) => c.id === consultationId);
-      setSelectedConsultation(consultation);
-
-      if (chatId && consultation) {
-        const chat = consultation.chats.find((c) => c.id === chatId);
-        setSelectedChat(chat);
-      }
-    }
   }, [consultationId, chatId]);
 
   const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
 
-  const paperPinHandler = () => {
-    setPaperPin(!paperPin);
-  };
-
-  const handleSendMessage = (e) => {
-    e.preventDefault();
-    if (messageInput.trim()) {
-      // Logic to send a message (can be extended as needed)
-      console.log('Message sent:', messageInput);
-      setMessageInput(''); // Clear input after sending
-    }
-  };
-
   return (
     <div className="h-[calc(100vh-64px)] flex bg-gray-100 dark:bg-gray-900">
+      {
+        isFileUploadOpen && (
+          <FirebaseImageUpload isFileUploadOpen={isFileUploadOpen} setFileUploadOpen={setFileUploadOpen} />
+        )
+      }
       {/* Sidebar */}
       <div
         className={`fixed md:static inset-y-0 left-0 transform ${
@@ -100,31 +95,33 @@ const ChatLayout = () => {
         } md:translate-x-0 transition-transform duration-300 ease-in-out z-30 w-80 bg-gradient-to-b from-purple-600 to-purple-800 dark:from-gray-800 dark:to-gray-900 border-r border-gray-200 dark:border-gray-700`}
       >
         <div className="h-full flex flex-col">
-          {/* Sidebar Header */}
-          <div className="p-4 border-b border-purple-500 dark:border-gray-700">
-            <h2 className="text-xl font-semibold text-white flex items-center">
-              Consultations
-            </h2>
+          <div className="flex justify-between p-4 border-b border-purple-500 dark:border-gray-700">
+            <h2 className="text-xl font-semibold text-white">Consultations</h2>
+            <button className='block md:hidden' onClick={()=> setSidebarOpen(false)}> close </button>
           </div>
 
-          {/* Consultation Folders */}
-          <div className="flex-1 overflow-y-auto space-y-2 p-2">
-            {mockConsultations.map((consultation) => (
-              <ConsultationFolder
-                key={consultation.id}
-                consultation={consultation}
-                selectedChat={selectedChat}
-                setSelectedChat={setSelectedChat}
-                isOpenState={consultation.id === consultationId} // Open folder if it matches the param
-              />
-            ))}
-          </div>
+          {chatSidebarLoading ? (
+            <div className="flex-1 flex items-center justify-center">
+              <LoadingSpinner />
+            </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto space-y-2 p-2">
+              {mockConsultations.map((consultation) => (
+                <ConsultationFolder
+                  key={consultation.id}
+                  consultation={consultation}
+                  selectedChat={selectedChat}
+                  setSelectedChat={setSelectedChat}
+                  isOpenState={consultation.id === selectedConsultation?.id}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col h-full overflow-hidden">
-        {/* Chat Header */}
         <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between">
           <div className="flex items-center">
             <button
@@ -133,106 +130,33 @@ const ChatLayout = () => {
             >
               <Menu className="w-6 h-6 text-gray-600 dark:text-gray-300" />
             </button>
-            {selectedChat && (
-              <div>
+            {chatId && (
                 <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
-                  Chat with Astrologer
+                  Chat with {(JSON.parse(localStorage.getItem("currentUser")).role === 'astrologer' ? 'Client' : 'Astrologer')}
                 </h2>
-              </div>
             )}
           </div>
-        </div>
-
-        {/* Chat Window */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {selectedChat ? (
-            selectedChat.messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${
-                  message.senderId === 'currentUser' ? 'justify-end' : 'justify-start'
-                }`}
-              >
-                <div
-                  className={`rounded-lg p-3 max-w-[70%] shadow ${
-                    message.senderId === 'currentUser'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white dark:bg-gray-800'
-                  }`}
+          {chatId && (
+              <button
+                onClick={() => setSelectedChat(null)}
+                className="bg-red-500/50 text-white rounded-lg px-4 py-2 hover:bg-red-600 transition-colors"
                 >
-                  <p>{message.text}</p>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-gray-500 dark:text-gray-400">Select a chat to start messaging.</p>
+                Clear Chat
+              </button>
           )}
         </div>
 
-        {/* Chat Input */}
-        {selectedChat && (
-          <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4">
-            <form onSubmit={handleSendMessage} className="flex items-center space-x-2 relative">
-              <div className="relative flex items-end justify-end p-4">
-                {/* Radial Menu */}
-                <div className="absolute bottom-[70px] right-5 flex flex-col items-end space-y-2 transition-all duration-300">
-                  <button
-                    className={`transition-all duration-300 transform bg-white p-2 rounded-full shadow hover:bg-gray-500 group ${
-                      paperPin ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'
-                    }`}
-                  >
-                    <FaFileAlt
-                      className="text-gray-700 transition-colors duration-300 group-hover:text-white"
-                      title="Document"
-                    />
-                  </button>
-                  <button
-                    className={`transition-all duration-300 transform bg-white p-2 rounded-full shadow hover:bg-gray-500 group ${
-                      paperPin ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'
-                    }`}
-                  >
-                    <FaCamera
-                      className="text-gray-700 transition-colors duration-300 group-hover:text-white"
-                      title="Camera"
-                    />
-                  </button>
-                  <button
-                    className={`transition-all duration-300 transform bg-white p-2 rounded-full shadow hover:bg-gray-500 group ${
-                      paperPin ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'
-                    }`}
-                  >
-                    <FaImage
-                      className="text-gray-700 transition-colors duration-300 group-hover:text-white"
-                      title="Image"
-                    />
-                  </button>
-                </div>
-
-                {/* Paperclip Button */}
-                <button
-                  className="bg-white p-3 rounded-full shadow hover:bg-gray-100 transition"
-                  onClick={paperPinHandler}
-                >
-                  <FaPaperclip className="text-gray-700" />
-                </button>
-              </div>
-              <input
-                type="text"
-                value={messageInput}
-                onChange={(e) => setMessageInput(e.target.value)}
-                placeholder="Type your message..."
-                className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              />
-              <button
-                type="submit"
-                disabled={!messageInput.trim()}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Send
-              </button>
-            </form>
-          </div>
-        )}
+        <div className="flex-1 overflow-y-auto space-y-4">
+          {chatId ? (
+            <div>
+                <ChatMessages chatId={chatId} currentUserId={JSON.parse(localStorage.getItem('currentUser')).user.id} isFileUploadOpen={isFileUploadOpen} setFileUploadOpen={setFileUploadOpen}/>
+        </div>      
+          ) : (
+            <div className='h-full w-full flex items-center justify-center'>
+              <p className="text-[50px] text-gray-500 dark:text-gray-400 relative bottom-8">Select a chat to start messaging.</p>
+            </div> 
+          )}
+        </div>
       </div>
     </div>
   );

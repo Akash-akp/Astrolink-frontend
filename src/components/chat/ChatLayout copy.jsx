@@ -9,9 +9,10 @@ import { FaFileAlt, FaCamera, FaImage } from 'react-icons/fa';
 const ChatLayout = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [selectedChat, setSelectedChat] = useState(mockChats[0]);
-  const [messageInput, setMessageInput] = useState('');
+    const [messageInput, setMessageInput] = useState('');
   const [paperPin, setPaperPin] = useState(false);
   const [searchQuery, setSearchQuery] = useState(''); // New state for search query
+  const [isSidebarLoading, setSidebarLoading] = useState(true); // New state for sidebar loading
 
   const paperPinHandler = () => {
     setPaperPin(!paperPin);

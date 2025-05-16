@@ -38,7 +38,7 @@ const NotificationPage = () => {
 
       if (response.status === 200) {
         toast.success('Request accepted successfully!', { position: 'top' });
-        setNotifications((prev) => prev.filter((notification) => notification.id !== id));
+        setNotifications((prev) => prev.filter((notification) => notification.id !== requestId));
       }else if(response.status == 208){
         toast.error('You have already accepted this request!', { position: 'top' });
       }

@@ -17,6 +17,7 @@ import { PaymentProvider } from './contexts/PaymentContext';
 import { shouldShowFooter } from './utils/routeUtils';
 import { ToastContainer } from 'react-toast';
 import NotificationPage from './pages/NotificationPage';
+import FirebaseImageUpload from './components/firebase/FirebaseImageUpload';
 
 // Protected route wrapper
 const ProtectedRoute = ({ children, allowedRole }) => {
@@ -138,11 +139,28 @@ const AppContent = () => {
 
 
         {/* Chat route (protected for logged-in users only) */}
-        <Route path="/chat/:consultationId" element={
+        <Route path="/chat/:chatId" element={
             <ProtectedRoute allowedRole={"both"}>
                 <ChatLayout />
             </ProtectedRoute>
         } />
+
+
+        {/* Chat route (protected for logged-in users only) */}
+        <Route path="/chat/consultation/:consultationId" element={
+            <ProtectedRoute allowedRole={"both"}>
+                <ChatLayout />
+            </ProtectedRoute>
+        } />
+
+        {/* Chat route (protected for logged-in users only) */}
+        <Route path="/firebase" element={
+            <ProtectedRoute allowedRole={"both"}>
+                <FirebaseImageUpload />
+            </ProtectedRoute>
+        } />
+
+
 
 
 

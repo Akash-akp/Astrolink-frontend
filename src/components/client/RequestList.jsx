@@ -1,14 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Users, X, MessageCircle } from 'lucide-react';
 import LoadingSpinner from '../common/LoadingSpinner';
-import proxyService from '../../utils/proxyService';
 
-const RequestList = ({activeRequests,setActiveRequests,isLoading,setIsLoading}) => {
+const RequestList = ({ activeRequests, setActiveRequests, isLoading }) => {
   const navigate = useNavigate();
 
   const handleViewChat = (requestId) => {
-    navigate(`/chat/${requestId}`);
+    navigate(`/chat/consultation/${requestId}`);
   };
 
   const handleCloseRequest = async (requestId) => {
@@ -22,42 +21,6 @@ const RequestList = ({activeRequests,setActiveRequests,isLoading,setIsLoading}) 
       }
     }
   };
-
-  useEffect(() => {
-    let isMounted = true; // Track if the component is still mounted
-
-    const fetchActiveRequests = async () => {
-      setIsLoading(true);
-      try {
-        // Simulate fetching data from an API
-        const response = await proxyService.get(
-          '/request/user/' + JSON.parse(localStorage.getItem('currentUser')).user.id,
-          {
-            headers: {
-              Authorization: `Bearer ${JSON.parse(localStorage.getItem('currentUser')).token}`, // Replace 'authToken' with your token key
-            },
-          }
-        );
-        if (response.status === 200 && isMounted) {
-          const data = response.data;
-          console.log(data);
-          setActiveRequests(data);
-        }
-      } catch (error) {
-        console.error('Error fetching active requests:', error);
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    fetchActiveRequests();
-
-    return () => {
-      isMounted = false; // Cleanup function to prevent state updates on unmounted components
-    };
-  }, []); // Empty dependency array ensures this runs only once when the component mounts
 
   if (isLoading) {
     return <LoadingSpinner className="py-10" />;

@@ -108,10 +108,10 @@ const AstrologerDashboard = () => {
         </div>
         
         <div className="lg:col-span-2">
-          <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">
+          {/* <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">
             Active Consultations
           </h2>
-          <ActiveRequests />
+          <ActiveRequests /> */}
           <h2 className="text-2xl font-semibold mb-4 mt-10 text-gray-800 dark:text-white">
             Available Consultation Requests
           </h2>

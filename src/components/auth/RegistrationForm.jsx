@@ -35,9 +35,9 @@ const RegistrationForm = ({ initialRole }) => {
 
     try {
       // For clients, process payment first
-      if (role === 'client') {
-        await processRegistrationPayment();
-      }
+      // if (role === 'client') {
+      //   await processRegistrationPayment();
+      // }
 
       let roleData;
       if (role === 'client') {

@@ -36,6 +36,14 @@ const Header = ({ toggleTheme, isDarkMode }) => {
                     >
                       Dashboard
                     </Link>
+                    <Link 
+                      to="/notification" 
+                      className={`hover:text-purple-200 transition-colors ${
+                        location.pathname === '/notification' ? 'font-semibold' : ''
+                      }`}
+                    >
+                      My Request
+                    </Link>
                   </>
                 )}
                 
@@ -86,11 +94,11 @@ const Header = ({ toggleTheme, isDarkMode }) => {
 
           <div className="flex items-center space-x-4">
 
-            {currentUser&& currentUser.role === 'client' && (
+            {/* {currentUser&& currentUser.role === 'client' && (
               <Link to={'/notification'} className="text-sm hover:text-purple-200 transition-colors">
                 <FaBell />
               </Link>
-            )}
+            )} */}
 
             {currentUser  && (
               <button
@@ -127,7 +135,7 @@ const Header = ({ toggleTheme, isDarkMode }) => {
                       Dashboard
                     </Link>
                     <Link 
-                      to="/client/requests" 
+                      to="/notification" 
                       className="block px-4 py-2 hover:bg-purple-700"
                     >
                       My Requests

@@ -19,6 +19,7 @@ const AvailableRequests = () => {
       })
       if(response.status === 200){
         toast.success('Request accepted successfully!', { position: 'top' });
+        setRequests((prev) => prev.filter((request) => request.id !== id));
         console.log(response.data);
       }else{
         toast.error('Something went wrong!', { position: 'top' });

@@ -2,24 +2,22 @@ import React, { useState } from 'react';
 import { useRequest } from '../../contexts/RequestContext';
 import LoadingSpinner from '../common/LoadingSpinner';
 import proxyService from '../../utils/proxyService';
+import { toast } from 'react-toast';
 
-const RequestForm = ({ onRequestCreated }) => {
-  const { createNewRequest, isLoading, activeRequests } = useRequest();
-  
+const RequestForm = ({ setReloadRequest }) => {
+  const { isLoading, activeRequests } = useRequest();
+
   const [title, setTitle] = useState('');
-  const [showBirthDetails, setShowBirthDetails] = useState(false);
   const [birthDate, setBirthDate] = useState('');
   const [birthTime, setBirthTime] = useState('');
   const [birthPlace, setBirthPlace] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
-      const birthDetails = showBirthDetails 
-        ? { birthDate, birthTime, birthPlace } 
-        : { birthDate: "unknown", birthTime: "unknown", birthPlace: "unknown" };
-        
+      const birthDetails = { birthDate, birthTime, birthPlace };
+
       const response = await proxyService.post(
         '/request/create/' + JSON.parse(localStorage.getItem('currentUser')).user.id,
         {
@@ -33,29 +31,27 @@ const RequestForm = ({ onRequestCreated }) => {
         }
       );
 
-      if (response.status === 200) {
-        const data = response.data;
-        console.log(data);
-
-        // Notify the parent component to rerender the page
-        if (onRequestCreated) {
-          onRequestCreated();
-        }
+      if (response.status === 201) {
+        toast.success('Request created successfully!', { position: 'top' });
+        setReloadRequest((prev) => !prev);
+      }else{
+        toast.error('Failed to create request. Please try again.', { position: 'top' });  
       }
+
     } catch (error) {
+      toast.error('Error creating request. Please try again.', { position: 'top' });
       console.error('Error creating request:', error);
     } finally {
-      // Reset the form fields
       setTitle('');
       setBirthDate('');
       setBirthTime('');
       setBirthPlace('');
-      setShowBirthDetails(false);
-      // window.location.reload();
     }
   };
 
-  // Check if client has reached the maximum number of active requests
+
+
+
   const hasReachedMaxRequests = activeRequests.length >= 3;
 
   return (
@@ -63,7 +59,7 @@ const RequestForm = ({ onRequestCreated }) => {
       <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">
         Create New Consultation Request
       </h3>
-      
+
       {hasReachedMaxRequests ? (
         <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-md border border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-200">
           <p className="text-sm">
@@ -86,65 +82,49 @@ const RequestForm = ({ onRequestCreated }) => {
               className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             />
           </div>
-          
-          <div className="flex items-center">
-            <label className="flex items-center cursor-pointer">
+
+          <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-md">
+            <div>
+              <label htmlFor="birthDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Birth Date
+              </label>
               <input
-                type="checkbox"
-                checked={showBirthDetails}
-                onChange={() => setShowBirthDetails(!showBirthDetails)}
-                className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                type="date"
+                id="birthDate"
+                value={birthDate}
+                onChange={(e) => setBirthDate(e.target.value)}
+                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
-              <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                Include birth details (optional)
-              </span>
-            </label>
-          </div>
-          
-          {showBirthDetails && (
-            <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-md">
-              <div>
-                <label htmlFor="birthDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Birth Date
-                </label>
-                <input
-                  type="date"
-                  id="birthDate"
-                  value={birthDate}
-                  onChange={(e) => setBirthDate(e.target.value)}
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="birthTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Birth Time
-                </label>
-                <input
-                  type="time"
-                  id="birthTime"
-                  value={birthTime}
-                  onChange={(e) => setBirthTime(e.target.value)}
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="birthPlace" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Birth Place
-                </label>
-                <input
-                  type="text"
-                  id="birthPlace"
-                  value={birthPlace}
-                  onChange={(e) => setBirthPlace(e.target.value)}
-                  placeholder="e.g., Mumbai, India"
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                />
-              </div>
             </div>
-          )}
-          
+
+            <div>
+              <label htmlFor="birthTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Birth Time
+              </label>
+              <input
+                type="time"
+                id="birthTime"
+                value={birthTime}
+                onChange={(e) => setBirthTime(e.target.value)}
+                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="birthPlace" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Birth Place
+              </label>
+              <input
+                type="text"
+                id="birthPlace"
+                value={birthPlace}
+                onChange={(e) => setBirthPlace(e.target.value)}
+                placeholder="e.g., Mumbai, India"
+                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              />
+            </div>
+          </div>
+
           <div className="pt-2">
             <button
               type="submit"
