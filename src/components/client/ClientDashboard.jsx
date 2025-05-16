@@ -47,8 +47,8 @@ const ClientDashboard = () => {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6 text-gray-800 dark:text-white">Client Dashboard</h1>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div className="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg shadow-md p-6 text-white">
           <div className="flex justify-between items-start">
             <div>
@@ -79,7 +79,10 @@ const ClientDashboard = () => {
           </p>
         </div>
 
-        <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg shadow-md p-6 text-white">
+        
+        {/* Rating  */}
+        {/* <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg shadow-md p-6 text-white">
+
           <div className="flex justify-between items-start">
             <div>
               <p className="text-amber-100 text-sm mb-1">Ratings Given</p>
@@ -92,7 +95,7 @@ const ClientDashboard = () => {
           <p className="mt-4 text-sm text-amber-100">
             Your feedback helps maintain quality of service.
           </p>
-        </div>
+        </div> */}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -117,19 +120,17 @@ const ClientDashboard = () => {
           </div>
         </div>
 
+
+          {/* Active Requests and History */}
         <div className="lg:col-span-2">
           <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">
             Your Active Requests
           </h2>
-          <RequestList
-            activeRequests={activeRequests}
-            setActiveRequests={setActiveRequests}
-            isLoading={isLoading}
-          />
-          <h2 className="text-2xl font-semibold my-4 text-gray-800 dark:text-white">
+          <RequestList activeRequests={activeRequests} setActiveRequests={setActiveRequests} isLoading={isLoading} setIsLoading={setIsLoading} />
+          {/* <h2 className="text-2xl font-semibold my-4 text-gray-800 dark:text-white">
             Your Requests History
           </h2>
-          <RequestHistory />
+          <RequestHistory /> */}
         </div>
       </div>
     </div>

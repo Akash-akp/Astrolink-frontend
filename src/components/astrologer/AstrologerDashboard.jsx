@@ -1,32 +1,59 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Star, User, MessageCircle } from 'lucide-react';
 import AvailableRequests from './AvailableRequests';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRequest } from '../../contexts/RequestContext';
 import ActiveRequests from './ActiveRequests';
+import proxyService from '../../utils/proxyService';
 
 const AstrologerDashboard = () => {
+  const [requests, setRequests] = useState([]);
   const { currentUser } = useAuth();
   const { activeChannels } = useRequest();
   const astrologer = currentUser; // Type casting removed
+  const [isLoading, setIsLoading] = useState(true);
   
+
+   useEffect(() => {
+      setIsLoading(true);
+      const fetchRequests = async () => {
+        try {
+          const token = JSON.parse(localStorage.getItem('currentUser')).token;
+          const response = await proxyService.get(`/request/available?astrologerId=${JSON.parse(localStorage.getItem('currentUser')).user.id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            }
+          });
+          setRequests(response.data);
+          console.log(response.data)
+        } catch (error) {
+          console.error('Error fetching requests:', error);
+        }
+      };
+
+  
+      fetchRequests();
+
+      setIsLoading(false);
+    }, []); // Empty dependency array to run only once on mount
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6 text-gray-800 dark:text-white">Astrologer Dashboard</h1>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div className="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg shadow-md p-6 text-white">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-purple-100 text-sm mb-1">Active Consultations</p>
-              <h3 className="text-3xl font-bold">{activeChannels.length}/{astrologer?.maxConsultations || 3}</h3>
+              <p className="text-purple-100 text-sm mb-1">Available Consultations</p>
+              <h3 className="text-3xl font-bold">{isLoading?('Loading...'):(''+requests.length)}</h3>
             </div>
             <div className="p-3 bg-white/10 rounded-full">
               <User className="w-6 h-6" />
             </div>
           </div>
           <p className="mt-4 text-sm text-purple-100">
-            You can handle up to {astrologer?.maxConsultations || 3} consultations at a time.
+            help your clients navigate life with celestial wisdom.
           </p>
         </div>
         
@@ -34,7 +61,7 @@ const AstrologerDashboard = () => {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-blue-100 text-sm mb-1">Completed Consultations</p>
-              <h3 className="text-3xl font-bold">12</h3>
+              <h3 className="text-3xl font-bold">{isLoading?('Loading...'):('0')}</h3>
             </div>
             <div className="p-3 bg-white/10 rounded-full">
               <MessageCircle className="w-6 h-6" />
@@ -45,7 +72,8 @@ const AstrologerDashboard = () => {
           </p>
         </div>
         
-        <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg shadow-md p-6 text-white">
+        {/* Rating */}
+        {/* <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg shadow-md p-6 text-white">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-amber-100 text-sm mb-1">Reputation Score</p>
@@ -58,7 +86,7 @@ const AstrologerDashboard = () => {
           <p className="mt-4 text-sm text-amber-100">
             Based on client feedback and ratings.
           </p>
-        </div>
+        </div> */}
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -115,7 +143,12 @@ const AstrologerDashboard = () => {
           <h2 className="text-2xl font-semibold mb-4 mt-10 text-gray-800 dark:text-white">
             Available Consultation Requests
           </h2>
-          <AvailableRequests />
+          <AvailableRequests 
+            requests={requests}
+            setRequests={setRequests}
+            isLoading={isLoading}
+            setIsLoading={setIsLoading}
+          />
         </div>
       </div>
     </div>

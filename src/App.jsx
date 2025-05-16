@@ -18,6 +18,7 @@ import { shouldShowFooter } from './utils/routeUtils';
 import { ToastContainer } from 'react-toast';
 import NotificationPage from './pages/NotificationPage';
 import FirebaseImageUpload from './components/firebase/FirebaseImageUpload';
+import PageNotFound from './pages/PageNotFound';
 
 // Protected route wrapper
 const ProtectedRoute = ({ children, allowedRole }) => {
@@ -161,11 +162,21 @@ const AppContent = () => {
         } />
 
 
+                {/* Chat route (protected for logged-in users only) */}
+        <Route path="/PageNotFound" element={
+            <ProtectedRoute allowedRole={"both"}>
+                <PageNotFound />
+            </ProtectedRoute>
+        } />
+
+
+
+
 
 
 
         {/* Fallback route */}
-        <Route path="*" element={<Navigate to="/" />} />
+        <Route path="*" element={<Navigate to="/PageNotFound" />} />
         </Routes>
         </main>
       </div>

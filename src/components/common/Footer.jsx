@@ -1,6 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Moon, Shield, Heart } from 'lucide-react';
+import { 
+  homeUrl,
+  registerUrl,
+  loginUrl,
+  privacyUrl,
+  termsUrl,
+  faqUrl,
+  contactUrl } from '../../constants/Endpoint.js';
 
 const Footer = () => {
   return (
@@ -21,13 +29,13 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4 text-white">Quick Links</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/" className="hover:text-purple-400 transition-colors">Home</Link>
+                <Link to={homeUrl} className="hover:text-purple-400 transition-colors">Home</Link>
               </li>
               <li>
-                <Link to="/register" className="hover:text-purple-400 transition-colors">Register</Link>
+                <Link to={registerUrl} className="hover:text-purple-400 transition-colors">Register</Link>
               </li>
               <li>
-                <Link to="/login" className="hover:text-purple-400 transition-colors">Login</Link>
+                <Link to={loginUrl} className="hover:text-purple-400 transition-colors">Login</Link>
               </li>
             </ul>
           </div>
@@ -36,10 +44,10 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4 text-white">Privacy</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/privacy-policy" className="hover:text-purple-400 transition-colors">Privacy Policy</Link>
+                <Link to={privacyUrl} className="hover:text-purple-400 transition-colors">Privacy Policy</Link>
               </li>
               <li>
-                <Link to="/terms" className="hover:text-purple-400 transition-colors">Terms of Service</Link>
+                <Link to={termsUrl} className="hover:text-purple-400 transition-colors">Terms of Service</Link>
               </li>
               <li>
                 <div className="flex items-center">
@@ -54,10 +62,10 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4 text-white">Support</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/faq" className="hover:text-purple-400 transition-colors">FAQ</Link>
+                <Link to={faqUrl} className="hover:text-purple-400 transition-colors">FAQ</Link>
               </li>
               <li>
-                <Link to="/contact" className="hover:text-purple-400 transition-colors">Contact Us</Link>
+                <Link to={contactUrl} className="hover:text-purple-400 transition-colors">Contact Us</Link>
               </li>
             </ul>
           </div>

@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Calendar, Users } from 'lucide-react';
 import proxyService from '../../utils/proxyService';
 import { toast } from 'react-toast';
+import LoadingSpinner from '../common/LoadingSpinner';
 
-const AvailableRequests = () => {
-  const [requests, setRequests] = useState([]);
+const AvailableRequests = ({isLoading=true,setIsLoading,requests,setRequests}) => {
+  
 
   const acceptRequest = async(id) => {
     try{
@@ -46,23 +47,11 @@ const AvailableRequests = () => {
     console.log(`Close request ID: ${id}`);
   };
 
-  useEffect(() => {
-    const fetchRequests = async () => {
-      try {
-        const token = JSON.parse(localStorage.getItem('currentUser')).token;
-        const response = await proxyService.get(`/request/available?astrologerId=${JSON.parse(localStorage.getItem('currentUser')).user.id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          }
-        });
-        setRequests(response.data);
-      } catch (error) {
-        console.error('Error fetching requests:', error);
-      }
-    };
+ 
 
-    fetchRequests();
-  }, []); // Empty dependency array to run only once on mount
+  if (isLoading) {
+    return <LoadingSpinner className="py-10" />;
+  }
 
   return (
     <div className="space-y-8">
