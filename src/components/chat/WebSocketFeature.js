@@ -65,11 +65,12 @@ export const subscribe = (chatId, onMessageReceived) => {
 // Send message
 export const sendMessage = (messageInput, id, chatId) => {
   if (!stompClient.current || !stompClient.current.connected || !messageInput.trim()) {
-    addLog('Cannot send message - not connected or empty message');
+    console.log('Cannot send message - not connected or empty message');
     return;
   }
 
-  const timestamp = new Date().toLocaleTimeString();
+  // Use ISO string for timestamp for consistency
+  const timestamp = new Date().toISOString();
 
   const message = {
     content: messageInput,
@@ -77,7 +78,7 @@ export const sendMessage = (messageInput, id, chatId) => {
     timestamp: timestamp,
   };
 
-  addLog(`Sending message to /app/sendMessage/${chatId}`);
+  console.log(`Sending message to /app/sendMessage/${chatId}`);
   stompClient.current.publish({
     destination: `/app/sendMessage/${chatId}`,
     body: JSON.stringify(message),

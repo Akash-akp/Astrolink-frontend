@@ -63,11 +63,11 @@ const MessageList = ({ messages, currentUserId,isFileUploadOpen, setFileUploadOp
   const [isRadialMenuOpen, setIsRadialMenuOpen] = useState(false);
 
   const handleSendMessage = (e) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault(); // Prevent the default form submission
+    sendMessage(messageInput.trim(),JSON.parse(localStorage.getItem('currentUser')).user.id,chatId); // Send the message through WebSocket
     if (messageInput.trim()) {
       setMessageInput(''); // Clear the input field
     }
-    sendMessage(messageInput,JSON.parse(localStorage.getItem('currentUser')).user.id,chatId); // Send the message through WebSocket
   };
 
   const toggleRadialMenu = () => {
@@ -106,15 +106,15 @@ const MessageList = ({ messages, currentUserId,isFileUploadOpen, setFileUploadOp
       </div>
 
       {/* Message Input */}
-      <div className="absolute w-full bottom-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4">
-        <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
-          <RadialMenu isOpen={isRadialMenuOpen} onToggle={toggleRadialMenu} isFileUploadOpen={isFileUploadOpen} setFileUploadOpen={setFileUploadOpen} />
+      <div className="absolute flex w-full bottom-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4">
+        <RadialMenu isOpen={isRadialMenuOpen} onToggle={toggleRadialMenu} isFileUploadOpen={isFileUploadOpen} setFileUploadOpen={setFileUploadOpen} />
+        <form onSubmit={handleSendMessage}  className="flex items-center space-x-2 relative w-full">
           <input
             type="text"
             value={messageInput}
             onChange={(e) => setMessageInput(e.target.value)}
             placeholder="Type your message..."
-            className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            className="w-[100%] flex-1 rounded-lg border border-gray-300 dark:border-gray-600 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
           />
           <button
             type="submit"

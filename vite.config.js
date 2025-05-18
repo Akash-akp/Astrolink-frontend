@@ -6,4 +6,11 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  server: {
+    watch: {
+      ignored: ['**/node_modules/**', '**/.git/**'],
+      usePolling: true,
+      interval: 1000
+    }
+  },
 });
