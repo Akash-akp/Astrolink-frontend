@@ -15,7 +15,10 @@ export const isConnected = () => {
 };
 
 // Connect to WebSocket server with JWT authentication
-export const connect = ({ onConnect, onDisconnect, onError } = {}) => {
+export const connect = (chatId,subscription) => {
+  const onConnect = null;
+  const onDisconnect = null;
+  const onError = null;
   if (isConnected()) {
     console.log('WebSocket already connected.');
     if (onConnect) onConnect();
@@ -66,6 +69,7 @@ export const connect = ({ onConnect, onDisconnect, onError } = {}) => {
         console.log('Connected:', frame || {});
         connectionStatus = 'connected';
         if (onConnect) onConnect(frame || {});
+        subscription();
       },
 
       onStompError: (frame = {}) => {
@@ -126,7 +130,7 @@ export const subscribe = (chatId, onMessageReceived) => {
     const token = currentUser?.token;
     
     const subscription = stompClient.subscribe(
-      `/topic/chat/${chatId}?token=${token}`, // Append token to subscription URL
+      `/topic/chat/${chatId}`, // Append token to topic URL
       (message) => {
         try {
           const receivedMsg = JSON.parse(message.body);
