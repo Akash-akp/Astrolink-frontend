@@ -1,86 +1,93 @@
 import { Client } from '@stomp/stompjs';
 
-const stompClient = { current: null };
+let stompClient = null;
 
-export const addLog = (message) => {
-  const timestamp = new Date().toLocaleTimeString();
-  return { timestamp, message };
-};
+// Utility: Add log with timestamp
+export const addLog = (message) => ({
+  timestamp: new Date().toLocaleTimeString(),
+  message,
+});
 
 // Connect to WebSocket server
-export const connect = (chatId, onConnectCallback) => {
-  const client = new Client({
-    brokerURL: 'ws://localhost:8090/ws',
-    debug: (str) => {
-      console.log(str);
-    },
-    onConnect: (frame) => {
-      console.log('Connected: ' + frame);
+export const connect = ({ onConnect, onDisconnect, onError } = {}) => {
+  if (stompClient && stompClient.active) {
+    console.log('WebSocket already connected.');
+    return;
+  }
 
-      // Call the onConnectCallback if provided
-      if (onConnectCallback) {
-        onConnectCallback();
-      }
+  stompClient = new Client({
+    brokerURL: 'ws://localhost:8090/ws',
+    reconnectDelay: 5000,
+    debug: (str) => console.log(str),
+    onConnect: (frame) => {
+      console.log('Connected:', frame);
+      if (onConnect) onConnect(frame);
     },
     onStompError: (frame) => {
-      console.log(`Error: ${frame.headers.message}`);
-      console.error('STOMP error', frame);
+      console.error('STOMP error:', frame);
+      if (onError) onError(frame);
     },
     onWebSocketClose: () => {
-      console.log('Connection closed');
+      console.log('WebSocket connection closed');
+      if (onDisconnect) onDisconnect();
     },
   });
 
-  client.activate();
-  stompClient.current = client;
+  stompClient.activate();
 };
 
 // Disconnect from WebSocket
 export const disconnect = () => {
-  if (stompClient.current) {
-    stompClient.current.deactivate();
-    stompClient.current = null;
+  if (stompClient) {
+    stompClient.deactivate();
+    stompClient = null;
+    console.log('WebSocket disconnected');
   }
 };
 
 // Subscribe to chat topic
 export const subscribe = (chatId, onMessageReceived) => {
-  if (!stompClient.current || !stompClient.current.connected) {
-    console.log('Not connected');
+  if (!stompClient || !stompClient.connected) {
+    console.warn('Cannot subscribe: WebSocket not connected');
     return;
   }
-
-  console.log(`Subscribing to /topic/chat/${chatId}`);
-  stompClient.current.subscribe(`/topic/chat/${chatId}`, (message) => {
-    console.log(`Received message: ${message.body}`);
-    const receivedMsg = JSON.parse(message.body);
-
-    // Call the callback with the new message
-    if (onMessageReceived) {
-      onMessageReceived(receivedMsg);
+  const subscription = stompClient.subscribe(`/topic/chat/${chatId}`, (message) => {
+    try {
+      const receivedMsg = JSON.parse(message.body);
+      if (onMessageReceived) onMessageReceived(receivedMsg);
+    } catch (err) {
+      console.error('Failed to parse message:', err);
     }
   });
+  return subscription;
+};
+
+// Unsubscribe from chat topic
+export const unsubscribe = (subscription) => {
+  if (subscription) {
+    subscription.unsubscribe();
+    console.log('Unsubscribed from topic');
+  }
 };
 
 // Send message
-export const sendMessage = (messageInput, id, chatId) => {
-  if (!stompClient.current || !stompClient.current.connected || !messageInput.trim()) {
-    console.log('Cannot send message - not connected or empty message');
+export const sendMessage = (messageInput, senderId, chatId) => {
+  if (!stompClient || !stompClient.connected || !messageInput.trim()) {
+    console.warn('Cannot send message - not connected or empty message');
     return;
   }
 
-  // Use ISO string for timestamp for consistency
-  const timestamp = new Date().toISOString();
-
   const message = {
     content: messageInput,
-    senderId: id, // Should be dynamic in production
-    timestamp: timestamp,
+    senderId,
+    timestamp: new Date().toISOString(),
   };
 
-  console.log(`Sending message to /app/sendMessage/${chatId}`);
-  stompClient.current.publish({
+  console.log('Sending message:', message);
+
+  stompClient.publish({
     destination: `/app/sendMessage/${chatId}`,
     body: JSON.stringify(message),
   });
+  console.log(`Sent message to /app/sendMessage/${chatId}`);
 };

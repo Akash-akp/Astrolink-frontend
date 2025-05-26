@@ -84,7 +84,7 @@ const AppContent = () => {
     return (
       <div className="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
         <Header />
-        <ToastContainer position="top-right" className="absolute top-[100px] z-10" />
+        <ToastContainer delay={2000} position="top-right" className="absolute top-[100px] z-10" />
         <main className="flex-grow">
         <Routes>
   {/* Public routes */}

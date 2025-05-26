@@ -2,28 +2,7 @@ import React, { useState } from 'react';
 import { Clock } from 'lucide-react';
 import CommonBtn from '../../utils/CommonBtn';
 
-const RequestHistory = () => {
-  // Mock request history
-  const mockRequestHistory = [
-    {
-      id: '3',
-      title: 'Financial Guidance',
-      createdAt: '2025-04-20T09:00:00Z',
-      status: 'Cancelled',
-    },
-    {
-      id: '4',
-      title: 'Health Advice',
-      createdAt: '2025-04-15T11:00:00Z',
-      status: 'Closed',
-    },
-    {
-      id: '5',
-      title: 'Spiritual Guidance',
-      createdAt: '2025-04-10T08:00:00Z',
-      status: 'Waiting to be Reviewed',
-    },
-  ];
+const RequestHistory = ({mockRequestHistory=[]}) => {
 
   const [requestHistory, setRequestHistory] = useState(mockRequestHistory); // Use mock data for request history
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
@@ -48,7 +27,7 @@ const RequestHistory = () => {
     setRequestHistory((prevHistory) =>
       prevHistory.map((request) =>
         request.id === currentRequestId
-          ? { ...request, status: 'Reviewed' } // Update status to "Reviewed"
+          ? { ...request, requestStatus: 'Reviewed' } // Update requestStatus to "Reviewed"
           : request
       )
     );
@@ -58,7 +37,7 @@ const RequestHistory = () => {
   return (
     <div>
       {/* Request History Section */}
-      <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Request History</h2>
+
       {requestHistory.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 text-center">
           <p className="text-gray-600 dark:text-gray-400">
@@ -88,19 +67,19 @@ const RequestHistory = () => {
                   <div className='flex flex-col items-end space-y-2'>
                     <span
                       className={`text-sm font-medium px-2 py-1 rounded ${
-                        request.status === 'Cancelled'
+                        request.requestStatus === 'Cancelled'
                           ? 'bg-red-100 text-red-600 dark:bg-red-900/30'
-                          : request.status === 'Closed'
+                          : request.requestStatus === 'DONE'
                           ? 'bg-gray-100 text-gray-600 dark:bg-gray-900/30'
-                          : request.status === 'Waiting to be Reviewed'
+                          : request.requestStatus === 'Waiting to be Reviewed'
                           ? 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30'
                           : 'bg-green-100 text-green-600 dark:bg-green-900/30'
                       }`}
                     >
-                      {request.status}
+                      {request.requestStatus}
                     </span>
                   {/* Review Button for "Waiting to be Reviewed" */}
-                  {request.status === 'Waiting to be Reviewed' && (
+                  {request.requestStatus === 'Waiting to be Reviewed' && (
                     <CommonBtn title={'Review'} func={openModal} />
                   )}
                   </div>

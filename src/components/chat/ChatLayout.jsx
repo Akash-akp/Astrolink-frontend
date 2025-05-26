@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import ConsultationFolder from './ConsultationFolder';
@@ -18,6 +18,7 @@ const ChatLayout = () => {
   const [mockConsultations, setMockConsultations] = useState([]);
   const [chatSidebarLoading, setChatSidebarLoading] = useState(true);
   const [isFileUploadOpen, setFileUploadOpen] = useState(false);
+  const navgiate = useNavigate();
 
   useEffect(() => {
     const fetchConsultations = async () => {
@@ -81,6 +82,31 @@ const ChatLayout = () => {
 
   const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
 
+  const clearChat = async () => {
+    if (!chatId) return;
+
+    const token = JSON.parse(localStorage.getItem('currentUser')).token;
+    const userId = JSON.parse(localStorage.getItem('currentUser')).user.id;
+    try {
+      await proxyService.delete(`/chats/${userId}/${chatId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      // setSelectedChat(null);
+      // setSelectedConsultation(null);
+      // setMockConsultations((prev) =>
+      //   prev.map((consultation) => ({
+      //     ...consultation,
+      //     chats: consultation.chats.filter((chat) => chat.id !== chatId),
+      //   }))
+      // );
+      navgiate('/chat');
+    } catch (error) {
+      console.error('Error clearing chat:', error);
+    }
+  }
+
   return (
     <div className="h-[calc(100vh-64px)] flex bg-gray-100 dark:bg-gray-900">
       {
@@ -138,7 +164,7 @@ const ChatLayout = () => {
           </div>
           {chatId && (
               <button
-                onClick={() => setSelectedChat(null)}
+                onClick={() => clearChat()}
                 className="bg-red-500/50 text-white rounded-lg px-4 py-2 hover:bg-red-600 transition-colors"
                 >
                 Clear Chat

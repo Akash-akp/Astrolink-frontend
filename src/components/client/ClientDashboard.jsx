@@ -4,11 +4,13 @@ import RequestForm from './RequestForm';
 import RequestList from './RequestList';
 import RequestHistory from './RequestHistory';
 import proxyService from '../../utils/proxyService';
+import LoadingSpinner from '../common/LoadingSpinner';
 
 const ClientDashboard = () => {
   const [activeRequests, setActiveRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [reloadRequest, setReloadRequest] = useState(false);
+  const [requestHistory, setRequestHistory] = useState([]); // State for request history
 
   // Function to fetch active requests
   const fetchActiveRequests = async () => {
@@ -23,7 +25,8 @@ const ClientDashboard = () => {
         }
       );
       if (response.status === 200) {
-        setActiveRequests(response.data);
+        setActiveRequests(response.data.filter(request => request.requestStatus !== 'DONE'));
+        setRequestHistory(response.data.filter(request => request.requestStatus === 'DONE'));
       }
     } catch (error) {
       console.error('Error fetching active requests:', error);
@@ -126,11 +129,17 @@ const ClientDashboard = () => {
           <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">
             Your Active Requests
           </h2>
-          <RequestList activeRequests={activeRequests} setActiveRequests={setActiveRequests} isLoading={isLoading} setIsLoading={setIsLoading} />
-          {/* <h2 className="text-2xl font-semibold my-4 text-gray-800 dark:text-white">
+          <RequestList activeRequests={activeRequests} setActiveRequests={setActiveRequests} isLoading={isLoading} setIsLoading={setIsLoading} setRequestHistory={setRequestHistory} setReloadRequest={setReloadRequest} />
+          <h2 className="text-2xl font-semibold my-4 text-gray-800 dark:text-white">
             Your Requests History
           </h2>
-          <RequestHistory /> */}
+          {
+            isLoading?(
+              <LoadingSpinner />
+            ):(
+              <RequestHistory mockRequestHistory={requestHistory} />
+            )
+          }
         </div>
       </div>
     </div>

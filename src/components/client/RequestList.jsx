@@ -2,8 +2,10 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Users, X, MessageCircle } from 'lucide-react';
 import LoadingSpinner from '../common/LoadingSpinner';
+import proxyService from '../../utils/proxyService';
+import { toast } from 'react-toast';
 
-const RequestList = ({ activeRequests, setActiveRequests, isLoading }) => {
+const RequestList = ({ activeRequests, setActiveRequests, isLoading , setRequestHistory ,setReloadRequest }) => {
   const navigate = useNavigate();
 
   const handleViewChat = (requestId) => {
@@ -11,14 +13,29 @@ const RequestList = ({ activeRequests, setActiveRequests, isLoading }) => {
   };
 
   const handleCloseRequest = async (requestId) => {
-    if (window.confirm('Are you sure you want to close this request? All chat data will be deleted.')) {
-      try {
-        setActiveRequests((prevRequests) =>
-          prevRequests.filter((request) => request.id !== requestId)
-        );
-      } catch (error) {
-        console.error('Error closing request:', error);
-      }
+    try {
+      const currentRequest = activeRequests.find((request) => request.id === requestId);
+      const response = await proxyService.delete(
+        `/request/${requestId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${JSON.parse(localStorage.getItem('currentUser')).token}`,
+          },
+        }
+      );
+      console.log('Request closed successfully');
+      setRequestHistory((prevHistory) => [
+        ...prevHistory,
+        currentRequest
+      ]);
+      setActiveRequests((prevRequests) =>
+        prevRequests.filter((request) => request.id !== requestId)
+      );
+      setReloadRequest((prev) => !prev);
+      toast.success('Request closed successfully!');
+    } catch (error) {
+      console.error('Error closing request:', error);
+      toast.error('Failed to close the request. Please try again.');
     }
   };
 

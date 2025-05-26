@@ -45,7 +45,7 @@ const ChatMessages = ({ chatId, currentUserId , isFileUploadOpen , setFileUpload
         disconnect(); // Disconnect WebSocket on component unmount
       };
     }
-  }, [chatId]);
+  }, [chatId]); 
 
   if (chatLoading) {
     return (
