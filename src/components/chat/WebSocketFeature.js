@@ -56,30 +56,30 @@ export const connect = ({ onConnect, onDisconnect, onError } = {}) => {
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
       debug: (str) => console.log(str),
-      
+
       // Add token to STOMP CONNECT frame headers
       connectHeaders: {
         'Authorization': `Bearer ${token}`
       },
-      
-      onConnect: (frame) => {
-        console.log('Connected:', frame);
+
+      onConnect: (frame = {}) => {
+        console.log('Connected:', frame || {});
         connectionStatus = 'connected';
-        if (onConnect) onConnect(frame);
+        if (onConnect) onConnect(frame || {});
       },
-      
-      onStompError: (frame) => {
-        console.error('STOMP error:', frame);
+
+      onStompError: (frame = {}) => {
+        console.error('STOMP error:', frame || {});
         connectionStatus = 'disconnected';
-        if (onError) onError(frame);
+        if (onError) onError(frame || {});
       },
-      
+
       onWebSocketClose: () => {
         console.log('WebSocket connection closed');
         connectionStatus = 'disconnected';
         if (onDisconnect) onDisconnect();
       },
-      
+
       // Handle connection errors
       onWebSocketError: (event) => {
         console.error('WebSocket error:', event);
@@ -90,7 +90,7 @@ export const connect = ({ onConnect, onDisconnect, onError } = {}) => {
 
     stompClient.activate();
     console.log('WebSocket activation initiated');
-    
+
   } catch (error) {
     console.error('Error during WebSocket connection setup:', error);
     connectionStatus = 'disconnected';
@@ -126,11 +126,14 @@ export const subscribe = (chatId, onMessageReceived) => {
     const token = currentUser?.token;
     
     const subscription = stompClient.subscribe(
-      `/topic/chat/${chatId}`, 
+      `/topic/chat/${chatId}?token=${token}`, // Append token to subscription URL
       (message) => {
         try {
           const receivedMsg = JSON.parse(message.body);
-          if (onMessageReceived) onMessageReceived(receivedMsg);
+          if (onMessageReceived){ 
+            onMessageReceived(receivedMsg)
+            console.log('Received message:', receivedMsg);
+          }
         } catch (err) {
           console.error('Failed to parse message:', err);
         }
